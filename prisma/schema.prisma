@@ -26,6 +26,7 @@ model questions{
 
 model codes_run{
   id Int @id @default(autoincrement())
+  user_id Int
   code String
   output String
   language languages
@@ -34,6 +35,7 @@ model codes_run{
 }
 model code_submit{
   id Int @id @default(autoincrement())
+  user_id Int
   code String
   output String
   language languages
