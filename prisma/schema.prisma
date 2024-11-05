@@ -20,6 +20,7 @@ enum languages{
 model questions{
   id Int @id @default(autoincrement())
   question String
+  description String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
