@@ -27,6 +27,7 @@ model questions{
   code_submit code_submit[]
   codes_run codes_run[]
   question_template question_template[]
+
 }
 
 model codes_run{
@@ -58,9 +59,16 @@ model question_template{
   question_id Int
   language languages
   template String
-  main String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   question questions @relation(fields: [question_id], references: [question_id])
+  testcases testcases[]
+}
+model testcases{
+  id Int @id @default(autoincrement())
+  template_id Int
+  main String
+
+  question_template question_template @relation(fields: [template_id], references: [id])
 }
