@@ -7,7 +7,7 @@ import { NextApiHandler } from 'next';
 
 export const authOptions = {
   session: {
-    strategy: 'jwt',
+    strategy: 'jwt' as 'jwt',
   },
   providers: [
     CredentialsProvider({
@@ -34,7 +34,7 @@ export const authOptions = {
           throw new Error('Password is incorrect');
         }
 
-        return { id: user._id, email: user.email };
+        return { id: user._id.toString(), email: user.email };
       },
     }),
   ],

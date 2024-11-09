@@ -18,28 +18,49 @@ enum languages{
   cpp
 }
 model questions{
-  id Int @id @default(autoincrement())
+  question_id Int @id @default(autoincrement())
   question String
   description String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  code_submit code_submit[]
+  codes_run codes_run[]
+  question_template question_template[]
 }
 
 model codes_run{
   id Int @id @default(autoincrement())
+  question_id Int
   user_id Int
   code String
   output String
   language languages
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  question questions @relation(fields: [question_id], references: [question_id])
 }
 model code_submit{
   id Int @id @default(autoincrement())
   user_id Int
+  question_id Int
   code String
   output String
   language languages
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  question questions @relation(fields: [question_id], references: [question_id])
+}
+model question_template{
+  id Int @id @default(autoincrement())
+  question_id Int
+  language languages
+  template String
+  main String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  question questions @relation(fields: [question_id], references: [question_id])
 }
