@@ -98,6 +98,7 @@ export default function Component() {
         </Resizable>
 
         {/* Right Panel */}
+
         <div className="flex-1 flex flex-col">
           <div className="border-b border-gray-700 p-2 flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -123,6 +124,12 @@ export default function Component() {
               spellCheck="false"
             />
           </div>
+          <Resizable>
+            <div className="flex-1 relative h-56 p-5">
+              <h1 className="text-xl text-white prose prose-invert font-serif ">compiler</h1>
+              <h1 className="text-xl text-white prose prose-invert font-serif">Working on it...</h1>
+            </div>
+          </Resizable>
         </div>
       </div>
     </div>

@@ -31,7 +31,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="w-full h-screen flex justify-center items-center text-white gap-5">
+    <div className="w-full h-screen flex justify-center items-center text-white gap-5 bg-zinc-800">
       <div>
         <img
           className="h-96 w-auto rounded-xl m-2"
@@ -45,7 +45,7 @@ export default function SignUpPage() {
           <div className="text-white flex flex-col gap-2">
             <label className="mr-5">Email</label>
             <input
-              className="bg-zinc-800 p-2 rounded"
+              className="bg-zinc-700 p-2 rounded"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -54,7 +54,7 @@ export default function SignUpPage() {
 
             <label className="mr-5">Password</label>
             <input
-              className="bg-zinc-800 p-2 rounded"
+              className="bg-zinc-700 p-2 rounded"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
