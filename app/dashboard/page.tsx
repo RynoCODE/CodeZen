@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Resizable } from "re-resizable";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,13 +16,54 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+interface QuestionTemplate {
+  language: "python" | "c" | "cpp";
+  template: string;
+}
+
+interface QuestionData {
+  question: string;
+  description: string;
+  question_template: QuestionTemplate[];
+}
+
 export default function Component() {
-  const [code, setCode] = useState(`class Solution {
-    public:
-        vector<int> twoSum(vector<int>& nums, int target) {
-            // Your code here
-        }
-};`);
+  const [questionData, setQuestionData] = useState<QuestionData | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<
+    "python" | "c" | "cpp"
+  >("cpp");
+  const [code, setCode] = useState("");
+
+  useEffect(() => {
+    async function fetchQuestion() {
+      const response = await fetch(`/api/fetchQuestion?question_id=1`);
+      const data: QuestionData = await response.json();
+      console.log(data);
+
+      setQuestionData(data);
+
+      // Ensure question_template exists before calling find()
+      const initialTemplate =
+        data.question_template?.find(
+          (template) => template.language === selectedLanguage
+        )?.template || "";
+
+      setCode(initialTemplate);
+    }
+
+    fetchQuestion();
+  }, [selectedLanguage]); // Ensure selectedLanguage is a dependency if it can change
+
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const language = e.target.value as "python" | "c" | "cpp";
+    setSelectedLanguage(language);
+
+    const template =
+      questionData?.question_template.find(
+        (template) => template.language === language
+      )?.template || "";
+    setCode(template);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
@@ -70,27 +111,12 @@ export default function Component() {
         >
           <Card className="h-full rounded-none border-r border-gray-700 bg-gray-900/50 backdrop-blur text-white">
             <div className="p-4">
-              <h1 className="text-xl font-bold mb-4">1. Two Sum</h1>
+              <h1 className="text-xl font-bold mb-4">
+                {questionData?.question}
+              </h1>
               <div className="space-y-4">
                 <div className="prose prose-invert">
-                  <p>
-                    Given an array of integers nums and an integer target,
-                    return indices of the two numbers such that they add up to
-                    target.
-                  </p>
-                  <p>
-                    You may assume that each input would have exactly one
-                    solution, and you may not use the same element twice.
-                  </p>
-                </div>
-                <div className="bg-gray-800 p-4 rounded-lg">
-                  <h3 className="font-bold mb-2">Example 1:</h3>
-                  <pre className="text-sm">
-                    Input: nums = [2,7,11,15], target = 9{"\n"}
-                    Output: [0,1]{"\n"}
-                    Explanation: Because nums[0] + nums[1] == 9, we return [0,
-                    1].
-                  </pre>
+                  <p>{questionData?.description}</p>
                 </div>
               </div>
             </div>
@@ -98,14 +124,17 @@ export default function Component() {
         </Resizable>
 
         {/* Right Panel */}
-
         <div className="flex-1 flex flex-col">
           <div className="border-b border-gray-700 p-2 flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <select className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm">
-                <option>C++</option>
-                <option>Python</option>
-                <option>Java</option>
+              <select
+                value={selectedLanguage}
+                onChange={handleLanguageChange}
+                className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm"
+              >
+                <option value="cpp">C++</option>
+                <option value="python">Python</option>
+                <option value="c">C</option>
               </select>
               <Button variant="ghost" size="sm">
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -126,8 +155,12 @@ export default function Component() {
           </div>
           <Resizable>
             <div className="flex-1 relative h-56 p-5">
-              <h1 className="text-xl text-white prose prose-invert font-serif ">compiler</h1>
-              <h1 className="text-xl text-white prose prose-invert font-serif">Working on it...</h1>
+              <h1 className="text-xl text-white prose prose-invert font-serif">
+                compiler
+              </h1>
+              <h1 className="text-xl text-white prose prose-invert font-serif">
+                Working on it...
+              </h1>
             </div>
           </Resizable>
         </div>
