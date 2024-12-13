@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Resizable } from "re-resizable";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import MonacoEditor, { OnMount } from "@monaco-editor/react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -33,36 +34,90 @@ export default function Component() {
     "python" | "c" | "cpp"
   >("cpp");
   const [code, setCode] = useState("");
+  const editorRef = useRef<any>(null); // Ref for Monaco Editor
 
+  // Fetch question data from the backend
   useEffect(() => {
     async function fetchQuestion() {
-      const response = await fetch(`/api/fetchQuestion?question_id=1`);
-      const data: QuestionData = await response.json();
-      console.log(data);
+      try {
+        const response = await fetch(`/api/fetchQuestion?question_id=1`);
+        const data: QuestionData = await response.json();
+        setQuestionData(data);
 
-      setQuestionData(data);
+        // Find and set the initial template for the selected language
+        const initialTemplate =
+          data.question_template.find(
+            (template) => template.language === selectedLanguage
+          )?.template || "";
 
-      // Ensure question_template exists before calling find()
-      const initialTemplate =
-        data.question_template?.find(
-          (template) => template.language === selectedLanguage
-        )?.template || "";
-
-      setCode(initialTemplate);
+        // Format the initial template using prettier indentation
+        setCode(formatCode(initialTemplate, selectedLanguage));
+      } catch (error) {
+        console.error("Error fetching question data:", error);
+      }
     }
 
     fetchQuestion();
-  }, [selectedLanguage]); // Ensure selectedLanguage is a dependency if it can change
+  }, [selectedLanguage]);
 
+  // Function to format code manually
+  const formatCode = (code: string, language: string) => {
+    if (!code) return "";
+
+    // Simple indentation rules (you can enhance this or use Prettier for more complex logic)
+    const indent = (code: string) =>
+      code
+        .split("\n")
+        .map((line) => line.trimStart())
+        .join("\n");
+
+    if (language === "python") {
+      // Python-specific formatting logic
+      return indent(code);
+    }
+    if (language === "cpp" || language === "c") {
+      // C/C++ formatting
+      return indent(code);
+    }
+    return code;
+  };
+
+  // Handle language change
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const language = e.target.value as "python" | "c" | "cpp";
     setSelectedLanguage(language);
 
+    // Get template for the selected language
     const template =
       questionData?.question_template.find(
         (template) => template.language === language
       )?.template || "";
-    setCode(template);
+
+    // Set and format the code for the selected language
+    setCode(formatCode(template, language));
+
+    // Automatically format the editor content
+    if (editorRef.current) {
+      editorRef.current.getAction("editor.action.formatDocument").run();
+    } 
+  };
+
+  // Handle editor mount
+  const handleEditorMount: OnMount = (editor) => {
+    editorRef.current = editor;
+
+    // Automatically format the document on editor mount
+    editor.getAction("editor.action.formatDocument").run();
+    setTimeout(() => {
+      editor.getAction("editor.action.formatDocument").run();
+    }, 100);
+  };
+
+  // Handle changes in the editor
+  const handleEditorChange = (value: string | undefined) => {
+    if (value !== undefined) {
+      setCode(value);
+    }
   };
 
   return (
@@ -145,24 +200,21 @@ export default function Component() {
               <Maximize2 className="h-4 w-4" />
             </Button>
           </div>
-          <div className="flex-1 relative">
-            <textarea
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="absolute inset-0 bg-gray-900/50 backdrop-blur font-mono p-4 text-sm text-gray-100 w-full h-full resize-none focus:outline-none"
-              spellCheck="false"
-            />
-          </div>
-          <Resizable>
-            <div className="flex-1 relative h-56 p-5">
-              <h1 className="text-xl text-white prose prose-invert font-serif">
-                compiler
-              </h1>
-              <h1 className="text-xl text-white prose prose-invert font-serif">
-                Working on it...
-              </h1>
-            </div>
-          </Resizable>
+          <MonacoEditor
+            height="calc(100vh - 4rem)"
+            language={selectedLanguage}
+            value={code}
+            onChange={handleEditorChange}
+            onMount={handleEditorMount}
+            options={{
+              minimap: { enabled: false },
+              fontSize: 16,
+              fontFamily: "Fira Code",
+              theme: "vs-dark",
+              wordWrap: "on",
+              automaticLayout: true,
+            }}
+          />
         </div>
       </div>
     </div>
