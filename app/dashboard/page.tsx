@@ -5,17 +5,6 @@ import { Resizable } from "re-resizable";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import MonacoEditor, { OnMount } from "@monaco-editor/react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Play,
-  Upload,
-  Clock,
-  Settings,
-  Menu,
-  Maximize2,
-  RefreshCw,
-} from "lucide-react";
 
 interface QuestionTemplate {
   language: "python" | "c" | "cpp";
@@ -34,9 +23,17 @@ export default function Component() {
     "python" | "c" | "cpp"
   >("cpp");
   const [code, setCode] = useState("");
-  const editorRef = useRef<any>(null); // Ref for Monaco Editor
+  const editorRef = useRef<any>(null);
 
-  // Fetch question data from the backend
+  // Preprocess the template from the database
+  const parseTemplateCode = (template: string) => {
+    return template
+      .replace(/\\n/g, "\n") // Replace escaped newlines
+      .replace(/\\t/g, "\t") // Replace escaped tabs
+      .replace(/ {4}/g, "\t"); // Optionally convert 4 spaces to a tab
+  };
+
+  // Fetch question data
   useEffect(() => {
     async function fetchQuestion() {
       try {
@@ -44,14 +41,19 @@ export default function Component() {
         const data: QuestionData = await response.json();
         setQuestionData(data);
 
-        // Find and set the initial template for the selected language
         const initialTemplate =
           data.question_template.find(
             (template) => template.language === selectedLanguage
           )?.template || "";
 
-        // Format the initial template using prettier indentation
-        setCode(formatCode(initialTemplate, selectedLanguage));
+        const parsedTemplate = parseTemplateCode(initialTemplate);
+        setCode(parsedTemplate);
+
+        // Format the editor content
+        if (editorRef.current) {
+          editorRef.current.setValue(parsedTemplate);
+          editorRef.current.getAction("editor.action.formatDocument").run();
+        }
       } catch (error) {
         console.error("Error fetching question data:", error);
       }
@@ -60,57 +62,34 @@ export default function Component() {
     fetchQuestion();
   }, [selectedLanguage]);
 
-  // Function to format code manually
-  const formatCode = (code: string, language: string) => {
-    if (!code) return "";
-
-    // Simple indentation rules (you can enhance this or use Prettier for more complex logic)
-    const indent = (code: string) =>
-      code
-        .split("\n")
-        .map((line) => line.trimStart())
-        .join("\n");
-
-    if (language === "python") {
-      // Python-specific formatting logic
-      return indent(code);
-    }
-    if (language === "cpp" || language === "c") {
-      // C/C++ formatting
-      return indent(code);
-    }
-    return code;
-  };
-
   // Handle language change
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const language = e.target.value as "python" | "c" | "cpp";
     setSelectedLanguage(language);
 
-    // Get template for the selected language
     const template =
       questionData?.question_template.find(
         (template) => template.language === language
       )?.template || "";
 
-    // Set and format the code for the selected language
-    setCode(formatCode(template, language));
+    const parsedTemplate = parseTemplateCode(template);
+    setCode(parsedTemplate);
 
-    // Automatically format the editor content
+    // Format the editor content
     if (editorRef.current) {
+      editorRef.current.setValue(parsedTemplate);
       editorRef.current.getAction("editor.action.formatDocument").run();
-    } 
+    }
   };
 
   // Handle editor mount
   const handleEditorMount: OnMount = (editor) => {
     editorRef.current = editor;
 
-    // Automatically format the document on editor mount
-    editor.getAction("editor.action.formatDocument").run();
-    setTimeout(() => {
-      editor.getAction("editor.action.formatDocument").run();
-    }, 100);
+    // Format the document after editor loads
+    if (editor) {
+      editor?.getAction("editor.action.formatDocument")?.run();
+    }
   };
 
   // Handle changes in the editor
@@ -122,42 +101,7 @@ export default function Component() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-      {/* Top Navigation */}
-      <div className="border-b border-gray-700 p-2 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon">
-            <Menu className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
-          <span className="text-sm font-medium">Problem List</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm">
-            <Play className="h-4 w-4 mr-2" />
-            Run
-          </Button>
-          <Button variant="ghost" size="sm" className="text-green-500">
-            <Upload className="h-4 w-4 mr-2" />
-            Submit
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Clock className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
       <div className="flex h-[calc(100vh-4rem)]">
-        {/* Left Panel */}
         <Resizable
           defaultSize={{ width: "40%", height: "100%" }}
           minWidth="20%"
@@ -178,27 +122,17 @@ export default function Component() {
           </Card>
         </Resizable>
 
-        {/* Right Panel */}
         <div className="flex-1 flex flex-col">
           <div className="border-b border-gray-700 p-2 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <select
-                value={selectedLanguage}
-                onChange={handleLanguageChange}
-                className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm"
-              >
-                <option value="cpp">C++</option>
-                <option value="python">Python</option>
-                <option value="c">C</option>
-              </select>
-              <Button variant="ghost" size="sm">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Auto
-              </Button>
-            </div>
-            <Button variant="ghost" size="icon">
-              <Maximize2 className="h-4 w-4" />
-            </Button>
+            <select
+              value={selectedLanguage}
+              onChange={handleLanguageChange}
+              className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm"
+            >
+              <option value="cpp">C++</option>
+              <option value="python">Python</option>
+              <option value="c">C</option>
+            </select>
           </div>
           <MonacoEditor
             height="calc(100vh - 4rem)"
