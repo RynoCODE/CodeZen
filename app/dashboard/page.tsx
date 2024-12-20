@@ -133,7 +133,16 @@ export default function Component() {
               <option value="python">Python</option>
               <option value="c">C</option>
             </select>
+            <div className="buttons flex justify-center items-center gap-2 ">
+              <button className="run px-5 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg">
+                run
+              </button>
+              <button className="submit px-5 py-2 bg-green-500 hover:bg-green-600 rounded-lg">
+                Submit
+              </button>
+            </div>
           </div>
+
           <MonacoEditor
             height="calc(100vh - 4rem)"
             language={selectedLanguage}
