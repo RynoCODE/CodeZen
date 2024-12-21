@@ -1,19 +1,23 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import client from '@/lib/redisClient';
-console.log("Compilation Complete");
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method === 'POST') {
-    const { problemId, userId, code, language } = req.body;
-    try {
-      await client.lPush('submissions', JSON.stringify({ problemId, userId, code, language }));
-      res.status(200).json({ message: "Submission successful" });
-      console.log("Submission successful");
-    } catch (err) {
-      res.status(500).json({ message: `Submission failed: ${err}` });
-    }
-  } else {
-    res.setHeader('Allow', ['POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { problemId, userId, code, language } = body;
+
+    console.log('Request body:', body);
+
+    await client.lPush('submisions', JSON.stringify({ problemId, userId, code, language }));
+    console.log('Submission successful');
+
+    return NextResponse.json({ message: 'Submission successful' }, { status: 200 });
+  } catch (err) {
+    console.error(`Submission failed: ${err}`);
+    return NextResponse.json({ message: `Submission failed: ${err}` }, { status: 500 });
   }
-};
+}
+
+export async function GET() {
+  return NextResponse.json({ message: 'Method GET is not allowed' }, { status: 405 });
+}

@@ -7,7 +7,9 @@ import { Card } from "@/components/ui/card";
 import MonacoEditor, { OnMount } from "@monaco-editor/react";
 import axios from 'axios';
 import { request } from "http";
-import { getSession } from 'next-auth/react';
+import { getSession, useSession } from 'next-auth/react';
+
+
 
 interface QuestionTemplate {
   language: "python" | "c" | "cpp";
@@ -40,7 +42,7 @@ export default function Component() {
   useEffect(() => {
     async function fetchQuestion() {
       try {
-        const response = await axios.get('/api/question');
+        const response = await axios.get('/api/fetchQuestion?question_id=1');
         const data: QuestionData = response.data;
         setQuestionData(data);
 
@@ -101,17 +103,22 @@ export default function Component() {
       setCode(value);
     }
   };
-
+  const {data: session} =useSession();
   const handleSubmit = async () => {
+    if (!session) {
+      console.error("User is not logged in.");
+      console.log("User is not logged in.")
+      return;
+    }
     try {
-      const response = await axios.post('/api/codesubmit', {
+      const res = await axios.post('/api/codeSubmit', {
         language: selectedLanguage,
         code: code,
-        //userid
-        //problemid
-
+        userid: session.user.id,
+        problemid: 1
       });
-      console.log('Code submitted successfully:', response.data);
+
+      console.log('Code submitted successfully:', res.data);
     } catch (error) {
       console.error('Error submitting code:', error);
     }
@@ -155,7 +162,7 @@ export default function Component() {
               <button className="run px-5 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg">
                 run
               </button>
-              <button className="submit px-5 py-2 bg-green-500 hover:bg-green-600 rounded-lg" onClick={handleSubmit}>
+              <button className="submit px-5 py-2 bg-green-500 hover:bg-green-600 rounded-lg" onClick={()=>handleSubmit()}>
                 Submit
               </button>
             </div>
