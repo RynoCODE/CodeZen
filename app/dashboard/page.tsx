@@ -114,7 +114,7 @@ export default function Component() {
       const res = await axios.post('/api/codeSubmit', {
         language: selectedLanguage,
         code: code,
-        userid: session.user.id,
+        userid: session?.user?.id,
         problemid: 1
       });
 
