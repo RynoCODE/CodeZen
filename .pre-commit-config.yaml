@@ -9,3 +9,10 @@ repos:
     rev: 22.10.0
     hooks:
     -   id: black
+-   repo: local
+    hooks:
+    -   id: gitleaks
+        name: Gitleaks Secret Detection
+        entry: gitleaks detect --verbose
+        language: system
+        stages: [commit]
