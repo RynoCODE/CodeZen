@@ -5,6 +5,9 @@ import { Resizable } from "re-resizable";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import MonacoEditor, { OnMount } from "@monaco-editor/react";
+import axios from 'axios';
+import { request } from "http";
+import { getSession } from 'next-auth/react';
 
 interface QuestionTemplate {
   language: "python" | "c" | "cpp";
@@ -37,8 +40,8 @@ export default function Component() {
   useEffect(() => {
     async function fetchQuestion() {
       try {
-        const response = await fetch(`/api/fetchQuestion?question_id=1`);
-        const data: QuestionData = await response.json();
+        const response = await axios.get('/api/question');
+        const data: QuestionData = response.data;
         setQuestionData(data);
 
         const initialTemplate =
@@ -99,6 +102,21 @@ export default function Component() {
     }
   };
 
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.post('/api/codesubmit', {
+        language: selectedLanguage,
+        code: code,
+        //userid
+        //problemid
+
+      });
+      console.log('Code submitted successfully:', response.data);
+    } catch (error) {
+      console.error('Error submitting code:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
       <div className="flex h-[calc(100vh-4rem)]">
@@ -137,7 +155,7 @@ export default function Component() {
               <button className="run px-5 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg">
                 run
               </button>
-              <button className="submit px-5 py-2 bg-green-500 hover:bg-green-600 rounded-lg">
+              <button className="submit px-5 py-2 bg-green-500 hover:bg-green-600 rounded-lg" onClick={handleSubmit}>
                 Submit
               </button>
             </div>
