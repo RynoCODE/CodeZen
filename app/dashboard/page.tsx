@@ -2,12 +2,23 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Resizable } from "re-resizable";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import MonacoEditor, { OnMount } from "@monaco-editor/react";
 import axios from 'axios';
-import { request } from "http";
-import { getSession, useSession } from 'next-auth/react';
+// import { request } from "http";
+import { useSession } from 'next-auth/react';
+
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
+}
 
 
 
@@ -111,13 +122,14 @@ export default function Component() {
       return;
     }
     try {
+      const user = session.user;
       const res = await axios.post('/api/codeSubmit', {
         language: selectedLanguage,
         code: code,
-        userid: session?.user?.id,
+        userid: user?.id,
         problemid: 1
       });
-
+      console.log(session.user);
       console.log('Code submitted successfully:', res.data);
     } catch (error) {
       console.error('Error submitting code:', error);
