@@ -32,3 +32,10 @@ jobs:
           registry: docker.io
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+          build-args: |
+            NEXT_PUBLIC_REDIS_PASSWORD=${{ secrets.NEXT_PUBLIC_REDIS_PASSWORD }}
+            NEXT_PUBLIC_REDIS_HOST=${{ secrets.NEXT_PUBLIC_REDIS_HOST }}
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            MONGODB_URI=${{ secrets.MONGODB_URI }}
+            NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
+            NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
