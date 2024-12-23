@@ -20,4 +20,9 @@ jobs:
     - run: npm install
     - run: npm run build
       env:
-        DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
+        NEXT_PUBLIC_REDIS_PASSWORD: ${{ secrets.NEXT_PUBLIC_REDIS_PASSWORD }}
+        NEXT_PUBLIC_REDIS_HOST: ${{ secrets.NEXT_PUBLIC_REDIS_HOST }}
+        DATABASE_URL: ${{ DATABASE_URL }}
+        MONGODB_URI: ${{ MONGODB_URI }}
+        NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+        NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
