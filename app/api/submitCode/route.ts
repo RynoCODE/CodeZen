@@ -27,9 +27,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json(submission, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Error submitting code" },
-      { status: 500 }
-    );
+    console.error(error);
+      return NextResponse.json(
+        { error: "Error submitting code" },
+        { status: 500 }
+      );
   }
 }

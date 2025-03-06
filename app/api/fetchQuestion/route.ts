@@ -1,9 +1,7 @@
 // app/api/fetchQuestion/route.ts
 
-import { PrismaClient } from "@prisma/client";
+import { prismaClient } from "@/lib/db";
 import { NextResponse } from "next/server";
-
-const prismaClient = new PrismaClient();
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

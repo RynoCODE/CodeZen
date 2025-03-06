@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
   }
 
 
-  const token = request.cookies.get('authToken'); 
+  const token = request.cookies.get('authToken');
 
 
   if (!token) {
